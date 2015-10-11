@@ -329,6 +329,7 @@ ovs_be32 set_mpls_lse_values(uint8_t ttl, uint8_t tc, uint8_t bos,
 
 #define ETH_TYPE_IP            0x0800
 #define ETH_TYPE_ARP           0x0806
+#define ETH_TYPE_HOTOM         0x080A
 #define ETH_TYPE_TEB           0x6558
 #define ETH_TYPE_VLAN_8021Q    0x8100
 #define ETH_TYPE_VLAN          ETH_TYPE_VLAN_8021Q
@@ -338,6 +339,11 @@ ovs_be32 set_mpls_lse_values(uint8_t ttl, uint8_t tc, uint8_t bos,
 #define ETH_TYPE_RARP          0x8035
 #define ETH_TYPE_MPLS          0x8847
 #define ETH_TYPE_MPLS_MCAST    0x8848
+
+static inline bool eth_type_hotom(ovs_be16 eth_type)
+{
+    return eth_type == htons(ETH_TYPE_HOTOM);
+}
 
 static inline bool eth_type_mpls(ovs_be16 eth_type)
 {
