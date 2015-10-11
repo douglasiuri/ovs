@@ -326,6 +326,7 @@ enum ovs_key_attr {
 	OVS_KEY_ATTR_VLAN,	/* be16 VLAN TCI */
 	OVS_KEY_ATTR_ETHERTYPE,	/* be16 Ethernet type */
 	OVS_KEY_ATTR_IPV4,      /* struct ovs_key_ipv4 */
+        OVS_KEY_ATTR_HOTOM,     /* struct ovs_key_hotom */
 	OVS_KEY_ATTR_IPV6,      /* struct ovs_key_ipv6 */
 	OVS_KEY_ATTR_TCP,       /* struct ovs_key_tcp */
 	OVS_KEY_ATTR_UDP,       /* struct ovs_key_udp */
@@ -405,6 +406,13 @@ struct ovs_key_ipv4 {
 	__u8   ipv4_tos;
 	__u8   ipv4_ttl;
 	__u8   ipv4_frag;	/* One of OVS_FRAG_TYPE_*. */
+};
+
+struct ovs_key_hotom {
+	__u8   hotom_net_id[3]; 
+	__u8   hotom_dst[3]; 
+	__u8   hotom_src[3];
+	__u8   hotom_type;
 };
 
 struct ovs_key_ipv6 {
