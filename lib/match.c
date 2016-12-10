@@ -992,7 +992,9 @@ match_format(const struct match *match, struct ds *s, int priority)
             ds_put_cstr(s, "mpls,");
         } else if (f->dl_type == htons(ETH_TYPE_MPLS_MCAST)) {
             ds_put_cstr(s, "mplsm,");
-        } else {
+		} else if (f->dl_type == htons(ETH_TYPE_HOTOM)) {
+			ds_put_cstr(s, "hotom,");
+		} else {
             skip_type = false;
         }
     }

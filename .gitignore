@@ -67,3 +67,8 @@ odp-netlink.h
 OvsDpInterface.h
 /.vagrant/
 testsuite.tmp.orig
+nbproject/
+OvS - HoTOM-BETA.sdf
+OvS - HoTOM-BETA.sln
+OvS - HoTOM-BETA.vcxproj
+OvS - HoTOM-BETA.vcxproj.filters

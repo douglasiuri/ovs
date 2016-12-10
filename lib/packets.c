@@ -341,6 +341,53 @@ pop_mpls(struct dp_packet *packet, ovs_be16 ethtype)
     }
 }
 
+// MPLS equivalent
+static bool(*is_hotom)() = is_mpls;
+
+// hotom to eth_packet 
+//void hotom_recover_eth_hdr(struct dp_packet *);
+//static inline struct eth_header * hotom_recover_eth_header(struct hotom_eth_header *header_eth)
+void
+pop_hotom(struct dp_packet *packet)
+{
+	if (is_hotom(packet)) {
+		struct eth_header *eth; // prepar pointer to eth header
+		struct hotom_header *hh = dp_packet_l2_5(packet); // prepar pointer to HotOM header
+		size_t len = packet->l2_5_ofs;
+
+		// Order is correct?
+		eth = dp_packet_put_uninit(packet, sizeof *eth);
+		memcpy(eth->eth_dst[3], &(hh->net_id), ETH_ADDR_LEN_HALF);
+		memcpy(eth->eth_dst[0], &(hh->dst), ETH_ADDR_LEN_HALF);
+		memcpy(eth->eth_src[3], &(hh->net_id), ETH_ADDR_LEN_HALF);
+		memcpy(eth->eth_src[0], &(hh->src), ETH_ADDR_LEN_HALF);
+		eth->eth_type = htons(hotom_type_to_ethertype(&(hh->type)));
+
+		/* Shift the l2 header forward. */
+		memmove((char*)dp_packet_data(packet) + HOTOM_HEADER_LEN, dp_packet_data(packet), len);
+		dp_packet_resize_l2_5(packet, -HOTOM_HEADER_LEN);
+	}
+}
+
+uint16_t hotom_type_to_ethertype(uint8_t *type) {
+	switch (*type) {
+	case HOTOM_TYPE_IPV4:
+		return 0x0800;
+	case HOTOM_TYPE_IPV6:
+		return 0x88DD;
+	case HOTOM_TYPE_AOE:
+		return 0x88A2;
+	case HOTOM_TYPE_HYPERSCSI:
+		return 0x889A;
+	case HOTOM_TYPE_FCOE:
+		return 0x8906;
+	case HOTOM_TYPE_FCOEINITPROT:
+		return 0x8914;
+	default:
+		return NULL;
+	}
+}
+
 /* Converts hex digits in 'hex' to an Ethernet packet in '*packetp'.  The
  * caller must free '*packetp'.  On success, returns NULL.  On failure, returns
  * an error message and stores NULL in '*packetp'.

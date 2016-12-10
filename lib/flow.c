@@ -484,6 +484,15 @@ miniflow_extract(struct dp_packet *packet, struct miniflow *dst)
         miniflow_push_words_32(mf, mpls_lse, mpls, count);
     }
 
+	/* Parse HotOM. */
+	if (OVS_UNLIKELY(eth_type_hotom(dl_type))) {
+		int count;
+		const void *hotom = data;
+
+		packet->l2_5_ofs = (char *)data - l2;
+		miniflow_push_words(mf, eth_dst, hotom, HOTOM_HEADER_LEN);
+	}
+
     /* Network layer. */
     packet->l3_ofs = (char *)data - l2;
 
