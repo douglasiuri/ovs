@@ -73,6 +73,7 @@ struct pkt_metadata {
 bool dpid_from_string(const char *s, uint64_t *dpidp);
 
 #define ETH_ADDR_LEN           6
+#define ETH_ADDR_LEN_HALF	   3
 
 static const uint8_t eth_addr_broadcast[ETH_ADDR_LEN] OVS_UNUSED
     = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
@@ -210,6 +211,8 @@ void set_mpls_lse_bos(ovs_be32 *lse, uint8_t bos);
 ovs_be32 set_mpls_lse_values(uint8_t ttl, uint8_t tc, uint8_t bos,
                              ovs_be32 label);
 
+void pop_hotom(struct dp_packet *); // Pop HotOM header
+
 /* Example:
  *
  * uint8_t mac[ETH_ADDR_LEN];
@@ -239,6 +242,7 @@ ovs_be32 set_mpls_lse_values(uint8_t ttl, uint8_t tc, uint8_t bos,
 
 #define ETH_TYPE_IP            0x0800
 #define ETH_TYPE_ARP           0x0806
+#define ETH_TYPE_HOTOM         0x080A
 #define ETH_TYPE_TEB           0x6558
 #define ETH_TYPE_VLAN_8021Q    0x8100
 #define ETH_TYPE_VLAN          ETH_TYPE_VLAN_8021Q
@@ -248,6 +252,11 @@ ovs_be32 set_mpls_lse_values(uint8_t ttl, uint8_t tc, uint8_t bos,
 #define ETH_TYPE_RARP          0x8035
 #define ETH_TYPE_MPLS          0x8847
 #define ETH_TYPE_MPLS_MCAST    0x8848
+
+static inline bool eth_type_hotom(ovs_be16 eth_type)
+{
+	return eth_type == htons(ETH_TYPE_HOTOM);
+}
 
 static inline bool eth_type_mpls(ovs_be16 eth_type)
 {
@@ -426,6 +435,59 @@ mpls_lse_to_bos(ovs_be32 mpls_lse)
 {
     return (mpls_lse & htonl(MPLS_BOS_MASK)) != 0;
 }
+
+
+/* HotOM related definitions */
+#define HOTOM_NET_ID_LEN	 3
+#define HOTOM_DST_LEN		 3
+#define HOTOM_SRC_LEN		 3
+#define HOTOM_TYPE_LEN		 1 
+
+#define HOTOM_NET_ID_MASK    0xffffff00000000000000
+#define HOTOM_TTL_SHIFT      56
+
+#define HOTOM_BOS_MASK       0x000000ffffff00000000
+#define HOTOM_BOS_SHIFT      32
+
+#define HOTOM_TC_MASK        0x000000000000ffffff00
+#define HOTOM_TC_SHIFT       8
+
+#define HOTOM_LABEL_MASK     0x000000000000000000ff
+#define HOTOM_LABEL_SHIFT    0
+
+#define HOTOM_HEADER_LEN    10
+
+/* HotOM Type field mapping */
+
+#define HOTOM_TYPE_IP			0x00
+#define HOTOM_TYPE_IPV4			HOTOM_TYPE_IP
+#define HOTOM_TYPE_IPV6			0x01
+#define HOTOM_TYPE_AOE			0x02
+#define HOTOM_TYPE_HYPERSCSI	0x03
+#define HOTOM_TYPE_FCOE			0x04
+#define HOTOM_TYPE_FCOEINITPROT 0x05
+
+struct hotom_header {
+	uint8_t net_id[HOTOM_NET_ID_LEN];
+	uint8_t dst[HOTOM_DST_LEN];
+	uint8_t src[HOTOM_SRC_LEN];
+	uint8_t type;
+};
+BUILD_ASSERT_DECL(HOTOM_HEADER_LEN == sizeof(struct hotom_header));
+
+#define HOTOM_ETH_HEADER_LEN (VLAN_ETH_HEADER_LEN + HOTOM_HEADER_LEN)
+
+struct hotom_eth_header {
+	uint8_t avs_dst[ETH_ADDR_LEN];
+	uint8_t avs_src[ETH_ADDR_LEN];
+	ovs_be16 vlan_tpid;         /* Always htons(ETH_TYPE_VLAN). Equals to 0x8100 */
+	ovs_be16 vlan_tci;	  	    /* Lowest 12 bits are VLAN ID, equals to vs-tag. */
+	ovs_be16 hotom_type;
+	struct hotom_header hotom_header;
+};
+BUILD_ASSERT_DECL(HOTOM_ETH_HEADER_LEN == sizeof(struct hotom_eth_header));
+
+uint16_t hotom_type_to_ethertype(uint8_t *type);
 
 #define IP_FMT "%"PRIu32".%"PRIu32".%"PRIu32".%"PRIu32
 #define IP_ARGS(ip)                             \
