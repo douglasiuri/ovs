@@ -307,6 +307,20 @@ static bool is_mpls(struct dp_packet *packet)
     return packet->l2_5_ofs != UINT16_MAX;
 }
 
+/* Push L2OMT header onto 'packet'. */
+void
+push_l2omt(struct dp_packet *packet)
+{
+    struct eth_header *eh;
+
+    eh = dp_packet_resize_l2(packet, ETH_HEADER_LEN);
+    eh->eth_dst = eth_addr_zero; // 00:00:00:00:00:00
+    eh->eth_src = eth_addr_zero; // 00:00:00:00:00:00
+    eh->eth_type = htons(ETH_TYPE_L2OMT);
+    packet->packet_type = htonl(PT_L2OMT);
+}
+
+/* Removes L2OMT header, including VLAN header, from 'packet'. */
 void pop_l2omt(struct dp_packet *packet)
 {
     pop_eth(packet);

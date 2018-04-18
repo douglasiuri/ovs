@@ -332,6 +332,9 @@ void compose_rarp(struct dp_packet *, const struct eth_addr);
 void eth_push_vlan(struct dp_packet *, ovs_be16 tpid, ovs_be16 tci);
 void eth_pop_vlan(struct dp_packet *);
 
+void push_l2omt(struct dp_packet *);
+void pop_l2omt(struct dp_packet *);
+
 const char *eth_from_hex(const char *hex, struct dp_packet **packetp);
 void eth_format_masked(const struct eth_addr ea,
                        const struct eth_addr *mask, struct ds *s);
@@ -532,7 +535,24 @@ struct vlan_eth_header {
 };
 BUILD_ASSERT_DECL(VLAN_ETH_HEADER_LEN == sizeof(struct vlan_eth_header));
 
-void pop_l2omt(struct dp_packet *packet);
+#define L2OMT_ETH_HEADER_LEN ETH_HEADER_LEN
+#define L2OMT_VLAN_ETH_HEADER_LEN VLAN_ETH_HEADER_LEN
+#define L2OMT_ETH_VLAN_TOTAL_MAX ETH_VLAN_TOTAL_MAX
+struct l2omt_eth_header {
+    struct eth_addr eth_dst;
+    struct eth_addr eth_src;
+    ovs_be16 eth_type;
+};
+BUILD_ASSERT_DECL(L2OMT_ETH_HEADER_LEN == sizeof(struct l2omt_eth_header));
+
+struct l2omt_vlan_l2_header {
+    struct eth_addr veth_dst;
+    struct eth_addr veth_src;
+    ovs_be16 veth_type;         /* Always htons(ETH_TYPE_VLAN). */
+    ovs_be16 veth_tci;          /* Lowest 12 bits are VLAN ID. */
+    ovs_be16 veth_next_type;
+};
+BUILD_ASSERT_DECL(L2OMT_VLAN_ETH_HEADER_LEN == sizeof(struct l2omt_vlan_l2_header));
 
 /* MPLS related definitions */
 #define MPLS_TTL_MASK       0x000000ff
