@@ -1101,6 +1101,9 @@ format_odp_action(struct ds *ds, const struct nlattr *a,
     case OVS_ACTION_ATTR_POP_ETH:
         ds_put_cstr(ds, "pop_eth");
         break;
+    case OVS_ACTION_ATTR_POP_L2OMT:
+        ds_put_cstr(ds, "pop_l2omt");
+        break;
     case OVS_ACTION_ATTR_PUSH_VLAN: {
         const struct ovs_action_push_vlan *vlan = nl_attr_get(a);
         ds_put_cstr(ds, "push_vlan(");

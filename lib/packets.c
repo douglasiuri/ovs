@@ -307,6 +307,14 @@ static bool is_mpls(struct dp_packet *packet)
     return packet->l2_5_ofs != UINT16_MAX;
 }
 
+void pop_l2omt(struct dp_packet *packet)
+{
+    pop_eth(packet);
+    if (packet->packet_type == PT_L2OMT) {
+            packet->packet_type = PT_ETH;
+    }
+}
+
 /* Set time to live (TTL) of an MPLS label stack entry (LSE). */
 void
 set_mpls_lse_ttl(ovs_be32 *lse, uint8_t ttl)

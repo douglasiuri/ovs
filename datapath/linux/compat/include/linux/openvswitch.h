@@ -930,7 +930,8 @@ enum ovs_action_attr {
 	OVS_ACTION_ATTR_TUNNEL_POP,    /* u32 port number. */
 	OVS_ACTION_ATTR_CLONE,         /* Nested OVS_CLONE_ATTR_*.  */
 	OVS_ACTION_ATTR_METER,         /* u32 meter number. */
-#endif
+#
+	OVS_ACTION_ATTR_POP_L2OMT,	   /* No argument. */
 	__OVS_ACTION_ATTR_MAX,	      /* Nothing past this will be accepted
 				       * from userspace. */
 

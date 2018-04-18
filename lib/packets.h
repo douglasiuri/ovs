@@ -394,6 +394,7 @@ ovs_be32 set_mpls_lse_values(uint8_t ttl, uint8_t tc, uint8_t bos,
 
 #define ETH_TYPE_IP            0x0800
 #define ETH_TYPE_ARP           0x0806
+#define ETH_TYPE_L2OMT         0x2f05
 #define ETH_TYPE_TEB           0x6558
 #define ETH_TYPE_VLAN_8021Q    0x8100
 #define ETH_TYPE_VLAN          ETH_TYPE_VLAN_8021Q
@@ -417,6 +418,10 @@ static inline bool eth_type_vlan(ovs_be16 eth_type)
         eth_type == htons(ETH_TYPE_VLAN_8021AD);
 }
 
+static inline bool eth_type_l2omt(ovs_be16 eth_type)
+{
+    return eth_type == htons(ETH_TYPE_L2OMT);
+}
 
 /* Minimum value for an Ethernet type.  Values below this are IEEE 802.2 frame
  * lengths. */
@@ -526,6 +531,8 @@ struct vlan_eth_header {
     ovs_be16 veth_next_type;
 };
 BUILD_ASSERT_DECL(VLAN_ETH_HEADER_LEN == sizeof(struct vlan_eth_header));
+
+void pop_l2omt(struct dp_packet *packet);
 
 /* MPLS related definitions */
 #define MPLS_TTL_MASK       0x000000ff
@@ -1342,6 +1349,7 @@ enum packet_type {
     PT_MPLS = PACKET_TYPE(OFPHTN_ETHERTYPE, ETH_TYPE_MPLS),
     PT_MPLS_MC = PACKET_TYPE(OFPHTN_ETHERTYPE, ETH_TYPE_MPLS_MCAST),
     PT_NSH  = PACKET_TYPE(OFPHTN_ETHERTYPE, ETH_TYPE_NSH),
+    PT_L2OMT = PACKET_TYPE(OFPHTN_ETHERTYPE, ETH_TYPE_L2OMT),
     PT_UNKNOWN = PACKET_TYPE(0xffff, 0xffff),   /* Unknown packet type. */
 };
 
