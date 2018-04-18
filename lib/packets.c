@@ -310,8 +310,8 @@ static bool is_mpls(struct dp_packet *packet)
 void pop_l2omt(struct dp_packet *packet)
 {
     pop_eth(packet);
-    if (packet->packet_type == PT_L2OMT) {
-            packet->packet_type = PT_ETH;
+    if (packet->packet_type == htonl(PT_L2OMT)) {
+            packet->packet_type = htonl(PT_ETH);
     }
 }
 
