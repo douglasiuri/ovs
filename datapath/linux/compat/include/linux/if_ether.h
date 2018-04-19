@@ -23,6 +23,10 @@
 #define ETH_P_NSH       0x894F          /* Network Service Header */
 #endif
 
+#ifndef ETH_P_L2OMT
+#define ETH_P_L2OMT       0x2F05        /* Network Service Header */
+#endif
+
 #define inner_eth_hdr rpl_inner_eth_hdr
 static inline struct ethhdr *inner_eth_hdr(const struct sk_buff *skb)
 {

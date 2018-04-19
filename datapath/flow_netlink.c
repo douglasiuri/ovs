@@ -91,6 +91,8 @@ static bool actions_may_change_flow(const struct nlattr *actions)
 		case OVS_ACTION_ATTR_SAMPLE:
 		case OVS_ACTION_ATTR_SET:
 		case OVS_ACTION_ATTR_SET_MASKED:
+		case OVS_ACTION_ATTR_PUSH_L2OMT:
+		case OVS_ACTION_ATTR_POP_L2OMT:
 		default:
 			return true;
 		}
@@ -2803,6 +2805,8 @@ static int __ovs_nla_copy_actions(struct net *net, const struct nlattr *attr,
 			[OVS_ACTION_ATTR_POP_ETH] = 0,
 			[OVS_ACTION_ATTR_PUSH_NSH] = (u32)-1,
 			[OVS_ACTION_ATTR_POP_NSH] = 0,
+			[OVS_ACTION_ATTR_PUSH_L2OMT] = sizeof(struct ovs_action_push_l2omt),
+			[OVS_ACTION_ATTR_POP_L2OMT] = 0,
 		};
 		const struct ovs_action_push_vlan *vlan;
 		int type = nla_type(a);
@@ -2986,6 +2990,17 @@ static int __ovs_nla_copy_actions(struct net *net, const struct nlattr *attr,
 			else
 				mac_proto = MAC_PROTO_NONE;
 			break;
+
+		/* Always is possible push L2OMT header */
+		case OVS_ACTION_ATTR_PUSH_L2OMT:
+			mac_proto = MAC_PROTO_NONE;  
+			break;
+		
+		/* Always is possible pop L2OMT header */
+		case OVS_ACTION_ATTR_POP_L2OMT:
+			mac_proto = MAC_PROTO_NONE;
+			break;
+
 		}
 
 		default:

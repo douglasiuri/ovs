@@ -891,7 +891,7 @@ odp_execute_actions(void *dp, struct dp_packet_batch *batch, bool steal,
         case OVS_ACTION_ATTR_RECIRC:
         case OVS_ACTION_ATTR_CT:
         case OVS_ACTION_ATTR_UNSPEC:
-        case OVS_ACTION_ATTR_PUSH_ETH: {
+        case OVS_ACTION_ATTR_PUSH_L2OMT: {
             const struct ovs_action_push_l2omt *eth = nl_attr_get(a);
 
             DP_PACKET_BATCH_FOR_EACH (packet, batch) {
