@@ -8306,7 +8306,7 @@ ofpact_check__(enum ofputil_protocol *usable_protocols, struct ofpact *a,
         }
         return 0;
     
-    case OFPAT_RAW_POP_L2OMT:
+    case OFPAT_RAW_PUSH_L2OMT:
     case OFPAT_RAW_POP_L2OMT:
         if (!eth_type_l2omt(dl_type)) {
             inconsistent_match(usable_protocols);
