@@ -3840,9 +3840,9 @@ format_POP_L2OMT(const struct ofpact_null *a,
 /* Push L2OMT actions. */
 
 static enum ofperr
-decode_OFPAT_RAW_POP_L2OMT(struct ofpbuf *out)
+decode_OFPAT_RAW_PUSH_L2OMT(struct ofpbuf *out)
 {
-    ofpact_put_PUSH_L2OMT(out)->ofpact.raw = OFPAT_RAW_POP_L2OMT;
+    ofpact_put_PUSH_L2OMT(out)->ofpact.raw = OFPAT_RAW_PUSH_L2OMT;
     return 0;
 }
 
@@ -3850,7 +3850,7 @@ static void
 encode_PUSH_L2OMT(const struct ofpact_null *null OVS_UNUSED,
                   enum ofp_version ofp_version, struct ofpbuf *out)
 {
-    put_OFPAT_RAW_POP_L2OMT(out);
+    put_OFPAT_RAW_PUSH_L2OMT(out);
 }
 
 static char * OVS_WARN_UNUSED_RESULT
@@ -3859,7 +3859,7 @@ parse_PUSH_L2OMT(char *arg OVS_UNUSED,
                  struct ofpbuf *ofpacts,
                  enum ofputil_protocol *usable_protocols OVS_UNUSED)
 {
-    ofpact_put_PUSH_L2OMT(ofpacts)->ofpact.raw = OFPAT_RAW_POP_L2OMT;
+    ofpact_put_PUSH_L2OMT(ofpacts)->ofpact.raw = OFPAT_RAW_PUSH_L2OMT;
     return NULL;
 }
 
