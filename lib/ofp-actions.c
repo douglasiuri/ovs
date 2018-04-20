@@ -357,9 +357,9 @@ enum ofp_raw_action_type {
 /* ## L2OMT extension actions. ## */
 /* ## ------------------------- ## */
 
-    /* OF1.X(201): void. */
+    /* OF1.2+(201): void. */
     OFPAT_RAW_PUSH_L2OMT,
-    /* OF1.X(202): void. */
+    /* OF1.2+(202): void. */
     OFPAT_RAW_POP_L2OMT,
 
 /* ## ------------------ ## */
