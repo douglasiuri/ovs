@@ -357,10 +357,10 @@ enum ofp_raw_action_type {
 /* ## L2OMT extension actions. ## */
 /* ## ------------------------- ## */
 
-    /* OF1.5(201): void. */
-    OFPAT_RAW15_PUSH_L2OMT,
-    /* OF1.5(202): void. */
-    OFPAT_RAW15_POP_L2OMT,
+    /* OF1.X(201): void. */
+    OFPAT_RAW_PUSH_L2OMT,
+    /* OF1.X(202): void. */
+    OFPAT_RAW_POP_L2OMT,
 
 /* ## ------------------ ## */
 /* ## Debugging actions. ## */
@@ -3806,9 +3806,9 @@ format_POP_MPLS(const struct ofpact_pop_mpls *a,
 /* Pop L2OMT actions. */
 
 static enum ofperr
-decode_OFPAT_RAW15_POP_L2OMT(struct ofpbuf *out)
+decode_OFPAT_RAW_POP_L2OMT(struct ofpbuf *out)
 {
-    ofpact_put_POP_L2OMT(out)->ofpact.raw = OFPAT_RAW15_POP_L2OMT;
+    ofpact_put_POP_L2OMT(out)->ofpact.raw = OFPAT_RAW_POP_L2OMT;
     return 0;
 }
 
@@ -3816,7 +3816,7 @@ static void
 encode_POP_L2OMT(const struct ofpact_null *null OVS_UNUSED,
                   enum ofp_version ofp_version, struct ofpbuf *out)
 {
-    put_OFPAT_RAW15_POP_L2OMT(out);
+    put_OFPAT_RAW_POP_L2OMT(out);
 }
 
 static char * OVS_WARN_UNUSED_RESULT
@@ -3825,7 +3825,7 @@ parse_POP_L2OMT(char *arg OVS_UNUSED,
                  struct ofpbuf *ofpacts,
                  enum ofputil_protocol *usable_protocols OVS_UNUSED)
 {
-    ofpact_put_POP_L2OMT(ofpacts)->ofpact.raw = OFPAT_RAW15_POP_L2OMT;
+    ofpact_put_POP_L2OMT(ofpacts)->ofpact.raw = OFPAT_RAW_POP_L2OMT;
     return NULL;
 }
 
@@ -3840,9 +3840,9 @@ format_POP_L2OMT(const struct ofpact_null *a,
 /* Push L2OMT actions. */
 
 static enum ofperr
-decode_OFPAT_RAW15_PUSH_L2OMT(struct ofpbuf *out)
+decode_OFPAT_RAW_POP_L2OMT(struct ofpbuf *out)
 {
-    ofpact_put_PUSH_L2OMT(out)->ofpact.raw = OFPAT_RAW15_PUSH_L2OMT;
+    ofpact_put_PUSH_L2OMT(out)->ofpact.raw = OFPAT_RAW_POP_L2OMT;
     return 0;
 }
 
@@ -3850,7 +3850,7 @@ static void
 encode_PUSH_L2OMT(const struct ofpact_null *null OVS_UNUSED,
                   enum ofp_version ofp_version, struct ofpbuf *out)
 {
-    put_OFPAT_RAW15_PUSH_L2OMT(out);
+    put_OFPAT_RAW_POP_L2OMT(out);
 }
 
 static char * OVS_WARN_UNUSED_RESULT
@@ -3859,7 +3859,7 @@ parse_PUSH_L2OMT(char *arg OVS_UNUSED,
                  struct ofpbuf *ofpacts,
                  enum ofputil_protocol *usable_protocols OVS_UNUSED)
 {
-    ofpact_put_PUSH_L2OMT(ofpacts)->ofpact.raw = OFPAT_RAW15_PUSH_L2OMT;
+    ofpact_put_PUSH_L2OMT(ofpacts)->ofpact.raw = OFPAT_RAW_POP_L2OMT;
     return NULL;
 }
 
@@ -8306,8 +8306,8 @@ ofpact_check__(enum ofputil_protocol *usable_protocols, struct ofpact *a,
         }
         return 0;
     
-    case OFPAT_RAW15_PUSH_L2OMT:
-    case OFPAT_RAW15_POP_L2OMT:
+    case OFPAT_RAW_POP_L2OMT:
+    case OFPAT_RAW_POP_L2OMT:
         if (!eth_type_l2omt(dl_type)) {
             inconsistent_match(usable_protocols);
         }
