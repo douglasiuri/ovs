@@ -1373,6 +1373,31 @@ parse_odp_userspace_action(const char *s, struct ofpbuf *actions)
     }
 
     {
+        struct ovs_action_push_l2omt push;
+        int eth_type = 0;
+        int n1 = -1;
+
+        if (ovs_scan(&s[n], "push_l2omt(src="ETH_ADDR_SCAN_FMT","
+                     "dst="ETH_ADDR_SCAN_FMT",type=%i)%n",
+                     ETH_ADDR_SCAN_ARGS(push.addresses.eth_src),
+                     ETH_ADDR_SCAN_ARGS(push.addresses.eth_dst),
+                     &eth_type, &n1)) {
+
+            nl_msg_put_unspec(actions, OVS_ACTION_ATTR_PUSH_L2OMT,
+                              &push, sizeof push);
+
+            res = n + n1;
+            goto out;
+        }
+    }
+
+    if (!strncmp(&s[n], "pop_l2omt", 9)) {
+        nl_msg_put_flag(actions, OVS_ACTION_ATTR_POP_L2OMT);
+        res = 9;
+        goto out;
+    }
+
+    {
         struct ovs_action_push_eth push;
         int eth_type = 0;
         int n1 = -1;

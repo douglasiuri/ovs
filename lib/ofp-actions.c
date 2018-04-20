@@ -353,6 +353,15 @@ enum ofp_raw_action_type {
     /* NX1.3+(48): void. */
     NXAST_RAW_DEC_NSH_TTL,
 
+/* ## ------------------------- ## */
+/* ## L2OMT extension actions. ## */
+/* ## ------------------------- ## */
+
+    /* OF1.X(201): void. */
+    OFPAT_RAW1X_PUSH_L2OMT,
+    /* OF1.X(202): void. */
+    OFPAT_RAW1X_POP_L2OMT,
+
 /* ## ------------------ ## */
 /* ## Debugging actions. ## */
 /* ## ------------------ ## */
@@ -489,6 +498,8 @@ ofpact_next_flattened(const struct ofpact *ofpact)
     case OFPACT_NAT:
     case OFPACT_ENCAP:
     case OFPACT_DECAP:
+    case OFPACT_POP_L2OMT:
+    case OFPACT_PUSH_L2OMT:
     case OFPACT_DEC_NSH_TTL:
         return ofpact_next(ofpact);
 
@@ -3790,6 +3801,74 @@ format_POP_MPLS(const struct ofpact_pop_mpls *a,
 {
     ds_put_format(s, "%spop_mpls:%s0x%04"PRIx16,
                   colors.param, colors.end, ntohs(a->ethertype));
+}
+
+/* Pop L2OMT actions. */
+
+static enum ofperr
+decode_OFPAT_RAW1X_POP_L2OMT(struct ofpbuf *out)
+{
+    ofpact_put_POP_L2OMT(out)->ofpact.raw = OFPAT_RAW1X_POP_L2OMT;
+    return 0;
+}
+
+static void
+encode_POP_L2OMT(const struct ofpact_null *null OVS_UNUSED,
+                  enum ofp_version ofp_version, struct ofpbuf *out)
+{
+    put_OFPAT_RAW1X_POP_L2OMT(out);
+}
+
+static char * OVS_WARN_UNUSED_RESULT
+parse_POP_L2OMT(char *arg OVS_UNUSED,
+                 const struct ofputil_port_map *port_map OVS_UNUSED,
+                 struct ofpbuf *ofpacts,
+                 enum ofputil_protocol *usable_protocols OVS_UNUSED)
+{
+    ofpact_put_POP_L2OMT(ofpacts)->ofpact.raw = OFPAT_RAW1X_POP_L2OMT;
+    return NULL;
+}
+
+static void
+format_POP_L2OMT(const struct ofpact_null *a,
+                  const struct ofputil_port_map *port_map OVS_UNUSED,
+                  struct ds *s)
+{
+    ds_put_format(s, "%spush_l2omt%s", colors.value, colors.end);
+}
+
+/* Push L2OMT actions. */
+
+static enum ofperr
+decode_OFPAT_RAW1X_PUSH_L2OMT(struct ofpbuf *out)
+{
+    ofpact_put_PUSH_L2OMT(out)->ofpact.raw = OFPAT_RAW1X_PUSH_L2OMT;
+    return 0;
+}
+
+static void
+encode_PUSH_L2OMT(const struct ofpact_null *null OVS_UNUSED,
+                  enum ofp_version ofp_version, struct ofpbuf *out)
+{
+    put_OFPAT_RAW1X_PUSH_L2OMT(out);
+}
+
+static char * OVS_WARN_UNUSED_RESULT
+parse_PUSH_L2OMT(char *arg OVS_UNUSED,
+                 const struct ofputil_port_map *port_map OVS_UNUSED,
+                 struct ofpbuf *ofpacts,
+                 enum ofputil_protocol *usable_protocols OVS_UNUSED)
+{
+    ofpact_put_PUSH_L2OMT(ofpacts)->ofpact.raw = OFPAT_RAW1X_PUSH_L2OMT;
+    return NULL;
+}
+
+static void
+format_PUSH_L2OMT(const struct ofpact_null *a,
+                  const struct ofputil_port_map *port_map OVS_UNUSED,
+                  struct ds *s)
+{
+    ds_put_format(s, "%spush_l2omt%s", colors.value, colors.end);
 }
 
 /* Set tunnel ID actions. */
@@ -7230,6 +7309,8 @@ ofpact_is_set_or_move_action(const struct ofpact *a)
     case OFPACT_DEBUG_SLOW:
     case OFPACT_ENCAP:
     case OFPACT_DECAP:
+    case OFPACT_POP_L2OMT:
+    case OFPACT_PUSH_L2OMT:
     case OFPACT_DEC_NSH_TTL:
         return false;
     default:
@@ -7272,6 +7353,8 @@ ofpact_is_allowed_in_actions_set(const struct ofpact *a)
     case OFPACT_STRIP_VLAN:
     case OFPACT_ENCAP:
     case OFPACT_DECAP:
+    case OFPACT_POP_L2OMT:
+    case OFPACT_PUSH_L2OMT:
     case OFPACT_DEC_NSH_TTL:
         return true;
 
@@ -7531,6 +7614,8 @@ ovs_instruction_type_from_ofpact_type(enum ofpact_type type)
     case OFPACT_NAT:
     case OFPACT_ENCAP:
     case OFPACT_DECAP:
+    case OFPACT_POP_L2OMT:
+    case OFPACT_PUSH_L2OMT:
     case OFPACT_DEC_NSH_TTL:
     default:
         return OVSINST_OFPIT11_APPLY_ACTIONS;
@@ -8218,6 +8303,13 @@ ofpact_check__(enum ofputil_protocol *usable_protocols, struct ofpact *a,
             flow->dl_type = OVS_BE16_MAX;
         }
         return 0;
+    
+    case OFPAT_RAW1X_PUSH_L2OMT:
+    case OFPAT_RAW1X_POP_L2OMT:
+        if (!eth_type_l2omt(dl_type)) {
+            inconsistent_match(usable_protocols);
+        }
+        return 0;
 
     case OFPACT_DEC_NSH_TTL:
         if ((flow->packet_type != htonl(PT_NSH)) &&
@@ -8586,6 +8678,8 @@ get_ofpact_map(enum ofp_version version)
         { OFPACT_SET_FIELD, 25 },
         /* OF1.3+ OFPAT_PUSH_PBB (26) not supported. */
         /* OF1.3+ OFPAT_POP_PBB (27) not supported. */
+        { OFPAT_RAW1X_PUSH_L2OMT, 201 },
+        { OFPAT_RAW1X_POP_L2OMT, 202 },
         { 0, -1 },
     };
 
@@ -8722,6 +8816,8 @@ ofpact_outputs_to_port(const struct ofpact *ofpact, ofp_port_t port)
     case OFPACT_NAT:
     case OFPACT_ENCAP:
     case OFPACT_DECAP:
+    case OFPACT_POP_L2OMT:
+    case OFPACT_PUSH_L2OMT:
     case OFPACT_DEC_NSH_TTL:
     default:
         return false;
