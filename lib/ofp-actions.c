@@ -3816,7 +3816,7 @@ static void
 encode_POP_L2OMT(const struct ofpact_null *null OVS_UNUSED,
                   enum ofp_version ofp_version, struct ofpbuf *out)
 {
-    put_OFPAT_RAW_POP_L2OMT(out);
+    put_OFPAT_POP_L2OMT(out);
 }
 
 static char * OVS_WARN_UNUSED_RESULT
@@ -3850,7 +3850,7 @@ static void
 encode_PUSH_L2OMT(const struct ofpact_null *null OVS_UNUSED,
                   enum ofp_version ofp_version, struct ofpbuf *out)
 {
-    put_OFPAT_RAW_PUSH_L2OMT(out);
+    put_OFPAT_PUSH_L2OMT(out);
 }
 
 static char * OVS_WARN_UNUSED_RESULT
